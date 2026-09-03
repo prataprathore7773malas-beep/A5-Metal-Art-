@@ -1552,6 +1552,7 @@ footer{
 </head>
 
 <body>
+<!-- A5 CMS: open this page with ?admin=1 to access the customer admin panel. -->
 
 <!-- =========================
      PRELOADER
@@ -2910,6 +2911,347 @@ document.addEventListener("keydown", e => {
 
 });
 
+</script>
+
+
+<style id="a5-admin-css">
+/* ===== A5 ADMIN PANEL — CMS ONLY ===== */
+#a5AdminOpen{
+ position:fixed;left:20px;bottom:20px;z-index:10000;width:48px;height:48px;border-radius:50%;
+ border:1px solid rgba(215,189,138,.45);background:#111;color:#d7bd8a;cursor:pointer;
+ box-shadow:0 12px 35px rgba(0,0,0,.45);display:none;font-size:18px
+}
+#a5AdminOverlay{position:fixed;inset:0;z-index:10001;background:rgba(4,5,6,.94);backdrop-filter:blur(18px);
+ display:none;overflow:auto;color:#eee;font-family:"DM Sans",sans-serif}
+#a5AdminOverlay.open{display:block}
+.a5-admin-shell{width:min(1400px,94vw);margin:30px auto 70px}
+.a5-admin-top{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 0 25px;border-bottom:1px solid #333}
+.a5-admin-brand{font-family:"Playfair Display",serif;font-size:28px;color:#d7bd8a}
+.a5-admin-actions{display:flex;gap:8px;flex-wrap:wrap}
+.a5-admin-btn{border:1px solid rgba(215,189,138,.45);background:#151718;color:#d7bd8a;padding:10px 14px;cursor:pointer;font-size:11px;text-transform:uppercase;letter-spacing:1px}
+.a5-admin-btn:hover{background:#d7bd8a;color:#111}
+.a5-admin-btn.danger{border-color:#8b4b4b;color:#ffb2b2}
+.a5-admin-btn.small{padding:7px 10px;font-size:9px}
+.a5-admin-grid{display:grid;grid-template-columns:230px 1fr;gap:18px;margin-top:20px}
+.a5-admin-nav{background:#0c0e0f;border:1px solid #292b2c;padding:10px;height:max-content;position:sticky;top:15px}
+.a5-admin-nav button{width:100%;text-align:left;background:none;border:0;color:#aaa;padding:13px 12px;cursor:pointer}
+.a5-admin-nav button.active,.a5-admin-nav button:hover{background:#17191a;color:#d7bd8a}
+.a5-admin-main{min-width:0}
+.a5-admin-card{background:#0c0e0f;border:1px solid #292b2c;padding:22px;margin-bottom:15px}
+.a5-admin-card h3{font-family:"Playfair Display",serif;font-weight:400;color:#d7bd8a;margin-bottom:14px;font-size:24px}
+.a5-admin-card p.a5-help{color:#777;font-size:11px;line-height:1.6;margin-bottom:15px}
+.a5-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.a5-field{display:flex;flex-direction:column;gap:6px}
+.a5-field.full{grid-column:1/-1}
+.a5-field label{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#777}
+.a5-field input,.a5-field textarea,.a5-field select{background:#121415;border:1px solid #303334;color:#eee;padding:11px;outline:none;font:inherit;font-size:12px}
+.a5-field textarea{min-height:90px;resize:vertical}
+.a5-field input:focus,.a5-field textarea:focus{border-color:#b79a67}
+.a5-list{display:grid;gap:8px}
+.a5-item{border:1px solid #282a2b;background:#111314;padding:12px;display:flex;align-items:center;gap:12px}
+.a5-item-thumb{width:62px;height:52px;object-fit:cover;background:#080909;border:1px solid #333}
+.a5-item-info{flex:1;min-width:0}.a5-item-info strong{display:block;color:#ddd;font-size:12px}.a5-item-info span{display:block;color:#666;font-size:10px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a5-item-actions{display:flex;gap:5px;flex-wrap:wrap}
+.a5-section-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #282a2b;padding:13px;background:#111314;margin-bottom:8px}
+.a5-section-row strong{font-size:12px}.a5-section-row small{color:#666}
+#a5Toast{position:fixed;right:22px;top:22px;z-index:10005;background:#d7bd8a;color:#111;padding:12px 16px;font-size:11px;display:none;box-shadow:0 10px 30px #000}
+#a5Login{position:fixed;inset:0;z-index:10003;background:#080909;display:none;align-items:center;justify-content:center;padding:20px}
+#a5Login.open{display:flex}
+.a5-login-box{width:min(410px,92vw);background:#101213;border:1px solid #343536;padding:34px}
+.a5-login-box h2{font-family:"Playfair Display",serif;color:#d7bd8a;font-size:32px;font-weight:400;margin-bottom:7px}
+.a5-login-box p{font-size:11px;color:#777;margin-bottom:22px}
+.a5-login-box input{width:100%;background:#0a0b0c;border:1px solid #333;color:#fff;padding:13px;margin-bottom:10px;outline:none}
+.a5-login-box button{width:100%;padding:13px;background:#d7bd8a;border:0;color:#111;cursor:pointer;font-weight:600}
+.a5-login-error{color:#e88;font-size:11px;margin:8px 0;min-height:16px}
+.a5-edit-mode [data-a5-editable]{outline:1px dashed rgba(215,189,138,.65);outline-offset:3px;cursor:text}
+.a5-edit-mode [data-a5-image]{outline:1px dashed rgba(215,189,138,.65);outline-offset:3px;cursor:pointer}
+.a5-img-preview{width:100%;max-height:180px;object-fit:contain;background:#080909;border:1px solid #2d2f30;margin-top:8px}
+.a5-login-note{margin-top:14px;color:#555;font-size:9px;line-height:1.5}
+@media(max-width:760px){.a5-admin-grid{grid-template-columns:1fr}.a5-admin-nav{position:static;display:flex;overflow:auto}.a5-admin-nav button{white-space:nowrap;width:auto}.a5-fields{grid-template-columns:1fr}.a5-field.full{grid-column:auto}.a5-admin-top{align-items:flex-start;flex-direction:column}}
+</style>
+
+<button id="a5AdminOpen" title="Admin">⚙</button>
+<div id="a5Toast"></div>
+
+<div id="a5Login">
+  <div class="a5-login-box">
+    <h2>A5 Metal Art</h2>
+    <p>Website Administration</p>
+    <input id="a5LoginId" placeholder="Admin ID" autocomplete="username">
+    <input id="a5LoginPass" type="password" placeholder="Password" autocomplete="current-password">
+    <div class="a5-login-error" id="a5LoginError"></div>
+    <button id="a5LoginBtn">LOGIN</button>
+    <div class="a5-login-note">This single-file CMS stores changes in this browser. For a live multi-device customer CMS, connect the same editor to a database/backend.</div>
+  </div>
+</div>
+
+<div id="a5AdminOverlay">
+ <div class="a5-admin-shell">
+  <div class="a5-admin-top">
+   <div>
+    <div class="a5-admin-brand">A5 Metal Art — Admin</div>
+    <div style="font-size:10px;color:#666;margin-top:5px">Edit the website without touching HTML</div>
+   </div>
+   <div class="a5-admin-actions">
+    <button class="a5-admin-btn" id="a5EditMode">Visual Edit</button>
+    <button class="a5-admin-btn" id="a5Save">Save Changes</button>
+    <button class="a5-admin-btn" id="a5Preview">Preview</button>
+    <button class="a5-admin-btn danger" id="a5Reset">Reset Website</button>
+    <button class="a5-admin-btn" id="a5Logout">Logout</button>
+   </div>
+  </div>
+  <div class="a5-admin-grid">
+   <aside class="a5-admin-nav">
+    <button class="active" data-tab="content">Content</button>
+    <button data-tab="cards">Products / Services</button>
+    <button data-tab="gallery">Gallery</button>
+    <button data-tab="images">Images</button>
+    <button data-tab="contact">Contact</button>
+    <button data-tab="sections">Sections</button>
+   </aside>
+   <main class="a5-admin-main" id="a5AdminMain"></main>
+  </div>
+ </div>
+</div>
+
+<script id="a5-admin-js">
+(function(){
+"use strict";
+const KEY="A5_METAL_ART_CMS_V1";
+const AUTH="A5_METAL_ART_ADMIN_AUTH";
+const ID="a5metalart";
+const PASS="777373";
+
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const overlay=$("#a5AdminOverlay"), login=$("#a5Login"), openBtn=$("#a5AdminOpen"), main=$("#a5AdminMain");
+let editMode=false, activeTab="content", state=load();
+
+function clone(obj){return JSON.parse(JSON.stringify(obj))}
+function toast(msg){const t=$("#a5Toast");t.textContent=msg;t.style.display="block";clearTimeout(window.__a5t);window.__a5t=setTimeout(()=>t.style.display="none",1800)}
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||"null")||{text:{},images:{},hidden:[],links:{}}}catch(e){return {text:{},images:{},hidden:[],links:{}}}}
+function persist(){localStorage.setItem(KEY,JSON.stringify(state));toast("Changes saved")}
+function isAuth(){return sessionStorage.getItem(AUTH)==="1"}
+function showLogin(){login.classList.add("open");$("#a5LoginId").focus()}
+function openAdmin(){if(!isAuth())showLogin();else{overlay.classList.add("open");render();}}
+function closeAdmin(){overlay.classList.remove("open");document.body.classList.remove("a5-edit-mode");editMode=false}
+
+function pathFor(el){
+  if(!el.dataset.a5Id){
+    const all=$$("[data-a5-id]");
+    let i=0, p=el;
+    while(p&&p!==document.body){i++;p=p.parentElement}
+    el.dataset.a5Id="el_"+i+"_"+all.length+"_"+Math.random().toString(36).slice(2,7);
+  }
+  return el.dataset.a5Id;
+}
+function textKey(el){return "text:"+pathFor(el)}
+function imageKey(img){return "img:"+pathFor(img)}
+function setText(el,value){state.text[textKey(el)]=value}
+function getText(el){return state.text[textKey(el)]!==undefined?state.text[textKey(el)]:el.textContent}
+function setImage(img,value){state.images[imageKey(img)]=value}
+function getImage(img){return state.images[imageKey(img)]||img.getAttribute("src")}
+
+function assignIds(){
+  $$("h1,h2,h3,h4,p,.eyebrow,.section-label,.signature,.stat strong,.stat p,.collection-number,.collection-category,.collection-link,.service-number,.service-arrow,.statement-mark,.statement p,.contact-detail span,.form-title,.footer-copy,.footer-credit,.hero-bottom > div").forEach(el=>pathFor(el));
+  $$("img").forEach(pathFor);
+}
+function applyState(){
+  assignIds();
+  $$("[data-a5-id]").forEach(el=>{
+    const k=textKey(el); if(state.text[k]!==undefined && !el.matches("input,textarea")) el.innerHTML=state.text[k];
+  });
+  $$("img").forEach(img=>{const v=getImage(img);if(v)img.src=v});
+  if(state.images["bg:hero"])$(".hero-bg").style.backgroundImage=`url("${state.images["bg:hero"]}")`;
+  if(state.images["bg:philosophy"])$(".philosophy").style.backgroundImage=`linear-gradient(90deg,rgba(7,8,9,.98),rgba(7,8,9,.75)),url("${state.images["bg:philosophy"]}")`;
+  state.hidden.forEach(sel=>$$(`[data-a5-section="${sel}"]`).forEach(e=>e.style.display="none"));
+  if(state.links.phone){$$('a[href^="tel:"]').forEach(a=>a.href="tel:"+state.links.phone.replace(/\D/g,""))}
+  if(state.links.whatsapp){$$('a[href*="wa.me"]').forEach(a=>{const n=state.links.whatsapp.replace(/\D/g,"");a.href="https://wa.me/"+n})}
+}
+function markSections(){
+  const map=[
+    [".hero","hero"],["#about","about"],["#collection","collection"],[".philosophy","philosophy"],
+    ["#craft","craft"],["#gallery","gallery"],["#services","services"],[".statement","statement"],["#contact","contact"],["footer","footer"]
+  ];
+  map.forEach(([sel,id])=>{const e=$(sel);if(e)e.dataset.a5Section=id});
+}
+function makeEditable(){
+  assignIds();
+  $$("[data-a5-editable],[data-a5-image]").forEach(x=>x.removeAttribute("data-a5-editable"));
+  $$("h1,h2,h3,h4,p,.eyebrow,.section-label,.signature,.stat strong,.stat p,.collection-number,.collection-category,.collection-link,.service-number,.service-arrow,.statement-mark,.statement p,.contact-detail span,.form-title,.footer-copy,.footer-credit,.hero-bottom > div").forEach(el=>{
+    if(!el.closest("#a5AdminOverlay")&&!el.closest("#a5Login"))el.dataset.a5Editable="1";
+  });
+  $$("img").forEach(img=>{if(!img.closest("#a5AdminOverlay")&&!img.closest("#a5Login"))img.dataset.a5Image="1"});
+  if(editMode)document.body.classList.add("a5-edit-mode");else document.body.classList.remove("a5-edit-mode");
+}
+document.addEventListener("click",e=>{
+  if(!editMode)return;
+  const img=e.target.closest("[data-a5-image]");
+  if(img&&!e.target.closest("#a5AdminOverlay")){
+    e.preventDefault();e.stopPropagation();
+    pickImage(img);return;
+  }
+  const el=e.target.closest("[data-a5-editable]");
+  if(el&&!e.target.closest("#a5AdminOverlay")&&!el.matches("a")){
+    e.preventDefault();e.stopPropagation();
+    editText(el);
+  }
+});
+function editText(el){
+  const old=getText(el);
+  const val=prompt("Edit this text:",old.replace(/<br\s*\/?>/gi,"\n").replace(/<[^>]*>/g,""));
+  if(val===null)return;
+  const safe=htmlEscape(val).replace(/\n/g,"<br>");
+  el.innerHTML=safe;setText(el,safe);persist();
+}
+function htmlEscape(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function pickImage(img){
+  const input=document.createElement("input");input.type="file";input.accept="image/*";
+  input.onchange=()=>{const f=input.files[0];if(!f)return;if(f.size>4*1024*1024){alert("Please use an image below 4MB.");return}
+    const r=new FileReader();r.onload=()=>{img.src=r.result;setImage(img,r.result);persist()};r.readAsDataURL(f)
+  };input.click();
+}
+
+function input(label,value,key,multi=false){
+  return `<div class="a5-field ${multi?"full":""}"><label>${label}</label>${multi?`<textarea data-key="${key}">${htmlEscape(value||"")}</textarea>`:`<input data-key="${key}" value="${htmlEscape(value||"")}">`}</div>`
+}
+function collectFields(){
+  $$(".a5-field [data-key]").forEach(x=>state.text["manual:"+x.dataset.key]=x.value);
+  persist();applyState();
+}
+function manual(k, fallback){return state.text["manual:"+k]!==undefined?state.text["manual:"+k]:fallback}
+
+function contentTab(){
+  const heroH=$(".hero h1")?.innerHTML||"Where Metal<br>Meets <em>Art.</em>";
+  const heroD=$(".hero-description")?.innerHTML||"";
+  const aboutTitle=$(".intro-title")?.innerHTML||"";
+  const aboutPs=$$("#about .intro-copy p").map(x=>x.innerHTML);
+  const phil=$(".philosophy h2")?.innerHTML||"";
+  const craft=$(".craft-copy h2")?.innerHTML||"";
+  const craftP=$(".craft-copy > p")?.innerHTML||"";
+  const galH=$("#gallery h2")?.innerHTML||"";
+  const galP=$("#gallery .gallery-header > p")?.innerHTML||"";
+  const serviceH=$("#services > .container > h2")?.innerHTML||"";
+  const quote=$(".statement h2")?.innerHTML||"";
+  const contactH=$("#contact h2")?.innerHTML||"";
+  main.innerHTML=`<div class="a5-admin-card"><h3>Visual Editor</h3><p class="a5-help">Turn on <b>Visual Edit</b>, then click any visible heading, paragraph, label or image on the website. Text opens for editing and images open an upload picker.</p><button class="a5-admin-btn" id="toggleVisual">${editMode?"Turn Visual Edit Off":"Turn Visual Edit On"}</button></div>
+  <div class="a5-admin-card"><h3>Quick Content</h3><div class="a5-fields">
+  ${input("Hero Heading",strip(heroH),"hero.heading",true)}
+  ${input("Hero Description",strip(heroD),"hero.description",true)}
+  ${input("About Heading",strip(aboutTitle),"about.heading",true)}
+  ${input("About Paragraph 1",strip(aboutPs[0]||""),"about.p1",true)}
+  ${input("About Paragraph 2",strip(aboutPs[1]||""),"about.p2",true)}
+  ${input("About Paragraph 3",strip(aboutPs[2]||""),"about.p3",true)}
+  ${input("Philosophy Heading",strip(phil),"philosophy.heading",true)}
+  ${input("Craft Heading",strip(craft),"craft.heading",true)}
+  ${input("Craft Description",strip(craftP),"craft.description",true)}
+  ${input("Gallery Heading",strip(galH),"gallery.heading",true)}
+  ${input("Gallery Description",strip(galP),"gallery.description",true)}
+  ${input("Services Heading",strip(serviceH),"services.heading",true)}
+  ${input("Statement",strip(quote),"statement.quote",true)}
+  ${input("Contact Heading",strip(contactH),"contact.heading",true)}
+  </div><button class="a5-admin-btn" style="margin-top:15px" id="applyQuick">Apply & Save</button></div>`;
+  $("#toggleVisual").onclick=()=>{editMode=!editMode;makeEditable();$("#toggleVisual").textContent=editMode?"Turn Visual Edit Off":"Turn Visual Edit On";toast(editMode?"Visual editing ON":"Visual editing OFF")};
+  $("#applyQuick").onclick=()=>{collectFields();applyManualContent();toast("Content updated")};
+}
+function strip(s){return (s||"").replace(/<br\s*\/?>/gi,"\n").replace(/<[^>]+>/g,"").trim()}
+function applyManualContent(){
+  const map={
+    "hero.heading":".hero h1","hero.description":".hero-description","about.heading":".intro-title",
+    "philosophy.heading":".philosophy h2","craft.heading":".craft-copy h2","craft.description":".craft-copy > p",
+    "gallery.heading":"#gallery h2","gallery.description":"#gallery .gallery-header > p","services.heading":"#services > .container > h2",
+    "statement.quote":".statement h2","contact.heading":"#contact h2"
+  };
+  Object.entries(map).forEach(([k,sel])=>{const e=$(sel),v=manual(k,"");if(e&&v)e.innerHTML=htmlEscape(v).replace(/\n/g,"<br>")});
+  ["p1","p2","p3"].forEach((n,i)=>{const e=$$("#about .intro-copy p")[i],v=manual("about."+n,"");if(e&&v)e.innerHTML=htmlEscape(v).replace(/\n/g,"<br>")});
+  assignIds();
+  $$("[data-a5-id]").forEach(el=>{if(["H1","H2","P","H3","H4"].includes(el.tagName))state.text[textKey(el)]=el.innerHTML});
+  persist();
+}
+
+function cardGroups(){
+ return [
+  {name:"Collection Products",sel:".collection-card",title:e=>e.querySelector("h3")?.textContent,img:e=>e.querySelector("img"),type:"collection"},
+  {name:"Services",sel:".service",title:e=>e.querySelector("h3")?.textContent,img:null,type:"service"},
+  {name:"Craft Points",sel:".craft-item",title:e=>e.querySelector("p")?.textContent,img:null,type:"craft"},
+  {name:"Stats",sel:".stat",title:e=>e.querySelector("p")?.textContent,img:null,type:"stat"}
+ ]
+}
+function cardsTab(){
+ let out=`<div class="a5-admin-card"><h3>Products / Services</h3><p class="a5-help">Manage repeated cards. Edit opens the browser's visual editor for that card; duplicate creates another card. Delete removes it from the live page.</p>`;
+ cardGroups().forEach(g=>{
+  out+=`<h3 style="font-size:18px;margin-top:22px">${g.name}</h3><div class="a5-list">`;
+  $$(g.sel).forEach((e,i)=>{
+   const im=g.img?g.img(e)?.src:"";
+   out+=`<div class="a5-item"><img class="a5-item-thumb" src="${im||""}"><div class="a5-item-info"><strong>${htmlEscape(g.title(e)||("Item "+(i+1)))}</strong><span>${g.type} · ${i+1}</span></div><div class="a5-item-actions"><button class="a5-admin-btn small" data-act="focus" data-sel="${g.sel}" data-i="${i}">Edit</button><button class="a5-admin-btn small" data-act="dup" data-sel="${g.sel}" data-i="${i}">Duplicate</button><button class="a5-admin-btn small danger" data-act="del" data-sel="${g.sel}" data-i="${i}">Delete</button></div></div>`;
+  });
+  out+=`</div><button class="a5-admin-btn small" style="margin-top:8px" data-act="add" data-sel="${g.sel}">+ Add New</button>`;
+ });
+ out+=`</div>`;
+ main.innerHTML=out;
+ main.onclick=e=>{
+  const b=e.target.closest("[data-act]");if(!b)return;
+  const sel=b.dataset.sel,i=+b.dataset.i||0,act=b.dataset.act;
+  if(act==="focus"){const el=$$(sel)[i];if(el){overlay.classList.remove("open");editMode=true;makeEditable();el.scrollIntoView({behavior:"smooth",block:"center"});toast("Click the highlighted text/image to edit")}}
+  if(act==="del"){if(confirm("Delete this item?")){$$(sel)[i]?.remove();rebindSlider();persist();render()}}
+  if(act==="dup"){const el=$$(sel)[i];if(el){el.after(el.cloneNode(true));rebindSlider();assignIds();persist();render()}}
+  if(act==="add"){const arr=$$(sel),el=arr[arr.length-1];if(el){el.after(el.cloneNode(true));const n=$$(sel).at(-1);n.querySelectorAll("h3,p,span,img").forEach(x=>{if(x.tagName==="IMG"){}else if(x.textContent.trim())x.textContent="New "+x.tagName.toLowerCase()});rebindSlider();assignIds();persist();render()}}
+ };
+}
+function galleryTab(){
+ main.innerHTML=`<div class="a5-admin-card"><h3>Gallery Manager</h3><p class="a5-help">Replace images directly by clicking an image in Visual Edit. Use these controls to duplicate or delete gallery tiles.</p><div class="a5-list">${$$(".gallery-item").map((e,i)=>`<div class="a5-item"><img class="a5-item-thumb" src="${e.querySelector("img")?.src||""}"><div class="a5-item-info"><strong>Gallery Image ${i+1}</strong><span>${e.querySelector("span")?.textContent||""}</span></div><div class="a5-item-actions"><button class="a5-admin-btn small" data-g="edit" data-i="${i}">Edit</button><button class="a5-admin-btn small" data-g="dup" data-i="${i}">Duplicate</button><button class="a5-admin-btn small danger" data-g="del" data-i="${i}">Delete</button></div></div>`).join("")}</div><button class="a5-admin-btn" id="addGallery" style="margin-top:12px">+ Add Gallery Image</button></div>`;
+ main.onclick=e=>{const b=e.target.closest("[data-g]");if(b){const i=+b.dataset.i,arr=$$(".gallery-item");if(b.dataset.g==="edit"){editMode=true;makeEditable();arr[i]?.querySelector("img")?.click();}if(b.dataset.g==="dup"){arr[i]?.after(arr[i].cloneNode(true));assignIds();persist();galleryTab()}if(b.dataset.g==="del"){if(confirm("Delete gallery image?")){arr[i]?.remove();persist();galleryTab()}}}};
+ $("#addGallery").onclick=()=>{const arr=$$(".gallery-item"),el=arr[0]?.cloneNode(true);if(!el)return;el.querySelector("img").src="";el.querySelector("span").textContent="New Gallery Item";arr.at(-1).after(el);assignIds();persist();galleryTab()};
+}
+function imagesTab(){
+ main.innerHTML=`<div class="a5-admin-card"><h3>Website Images</h3><p class="a5-help">Click any image while Visual Edit is ON to replace it. Background images are managed below.</p>
+ <div class="a5-fields">
+ <div class="a5-field"><label>Hero Background</label><button class="a5-admin-btn" id="heroBgBtn">Upload Hero Background</button></div>
+ <div class="a5-field"><label>Philosophy Background</label><button class="a5-admin-btn" id="philBgBtn">Upload Philosophy Background</button></div>
+ </div></div>
+ <div class="a5-admin-card"><h3>Current Images</h3><div class="a5-list">${$$("img").filter(x=>!x.closest("#a5AdminOverlay")&&!x.closest("#a5Login")).map((im,i)=>`<div class="a5-item"><img class="a5-item-thumb" src="${im.src}"><div class="a5-item-info"><strong>Image ${i+1}</strong><span>${im.alt||"No alt text"}</span></div><button class="a5-admin-btn small" data-im="${i}">Replace</button></div>`).join("")}</div></div>`;
+ const imgs=$$("img").filter(x=>!x.closest("#a5AdminOverlay")&&!x.closest("#a5Login"));
+ $$("[data-im]").forEach(b=>b.onclick=()=>pickImage(imgs[+b.dataset.im]));
+ $("#heroBgBtn").onclick=()=>pickBg("hero");$("#philBgBtn").onclick=()=>pickBg("philosophy");
+}
+function pickBg(type){const input=document.createElement("input");input.type="file";input.accept="image/*";input.onchange=()=>{const f=input.files[0];if(!f)return;if(f.size>4*1024*1024){alert("Please use an image below 4MB.");return}const r=new FileReader();r.onload=()=>{state.images["bg:"+type]=r.result;applyState();persist();imagesTab()};r.readAsDataURL(f)};input.click()}
+function contactTab(){
+ const phone=state.links.phone||"918884002002", wa=state.links.whatsapp||phone;
+ main.innerHTML=`<div class="a5-admin-card"><h3>Contact & Enquiry</h3><p class="a5-help">These settings control phone/WhatsApp buttons. Email, address and Instagram text can be edited with Visual Edit.</p><div class="a5-fields">
+ ${input("Phone Number",phone,"contact.phone")}
+ ${input("WhatsApp Number",wa,"contact.whatsapp")}
+ ${input("Email","info@a5metalart.com","contact.email")}
+ ${input("Location","Bangalore, India","contact.location")}
+ ${input("Instagram","@a5metalart","contact.instagram")}
+ </div><button class="a5-admin-btn" id="saveContact" style="margin-top:12px">Save Contact</button></div>`;
+ $("#saveContact").onclick=()=>{state.links.phone=$('[data-key="contact.phone"]').value;state.links.whatsapp=$('[data-key="contact.whatsapp"]').value;persist();applyState();toast("Contact updated")};
+}
+function sectionsTab(){
+ const names={hero:"Hero",about:"About",collection:"Collection",philosophy:"Philosophy",craft:"Craft",gallery:"Gallery",services:"Services",statement:"Statement",contact:"Contact",footer:"Footer"};
+ main.innerHTML=`<div class="a5-admin-card"><h3>Section Visibility</h3><p class="a5-help">Hide/show any public section without changing its design.</p>${Object.entries(names).map(([id,n])=>`<div class="a5-section-row"><div><strong>${n}</strong><br><small>#${id}</small></div><button class="a5-admin-btn small" data-sec="${id}">${state.hidden.includes(id)?"Show":"Hide"}</button></div>`).join("")}</div>`;
+ $$("[data-sec]").forEach(b=>b.onclick=()=>{const id=b.dataset.sec;if(state.hidden.includes(id))state.hidden=state.hidden.filter(x=>x!==id);else state.hidden.push(id);applyState();persist();sectionsTab()});
+}
+function render(){markSections();applyState();const tabs={content:contentTab,cards:cardsTab,gallery:galleryTab,images:imagesTab,contact:contactTab,sections:sectionsTab};tabs[activeTab]();$$(".a5-admin-nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===activeTab));makeEditable()}
+function rebindSlider(){
+ const track=$("#collectionTrack");if(!track)return;
+ let idx=0;
+ function upd(){const cards=$$(".collection-card");idx=Math.max(0,Math.min(idx,cards.length-1));track.style.transform=`translateX(-${idx*100}%)`;$("#currentSlide")&&($("#currentSlide").textContent=String(idx+1).padStart(2,"0"));const total=$(".slide-count");if(total)total.innerHTML=`<strong id="currentSlide">${String(idx+1).padStart(2,"0")}</strong> &nbsp; / &nbsp; ${cards.length}`;}
+ $("#nextBtn").onclick=()=>{const n=$$(".collection-card").length;idx=(idx+1)%Math.max(n,1);upd()};
+ $("#prevBtn").onclick=()=>{const n=$$(".collection-card").length;idx=(idx-1+n)%Math.max(n,1);upd()};upd();
+}
+$("#a5LoginBtn").onclick=()=>{if($("#a5LoginId").value===ID&&$("#a5LoginPass").value===PASS){sessionStorage.setItem(AUTH,"1");login.classList.remove("open");openAdmin()}else $("#a5LoginError").textContent="Invalid Admin ID or Password"};
+$("#a5LoginPass").addEventListener("keydown",e=>{if(e.key==="Enter")$("#a5LoginBtn").click()});
+openBtn.onclick=openAdmin;
+$("#a5EditMode").onclick=()=>{editMode=!editMode;makeEditable();toast(editMode?"Visual Edit ON — click website text/images":"Visual Edit OFF")};
+$("#a5Save").onclick=()=>{assignIds();persist();toast("All changes saved")};
+$("#a5Preview").onclick=()=>{closeAdmin();window.scrollTo({top:0,behavior:"smooth"})};
+$("#a5Logout").onclick=()=>{sessionStorage.removeItem(AUTH);closeAdmin();toast("Logged out")};
+$("#a5Reset").onclick=()=>{if(confirm("Reset ALL A5 website changes to the original HTML?")){localStorage.removeItem(KEY);state={text:{},images:{},hidden:[],links:{}};location.reload()}};
+$$(".a5-admin-nav button").forEach(b=>b.onclick=()=>{activeTab=b.dataset.tab;render()});
+markSections();applyState();
+if(new URLSearchParams(location.search).get("admin")==="1")openBtn.style.display="block";
+if(new URLSearchParams(location.search).get("admin")==="1"&&isAuth())openAdmin();
+})();
 </script>
 
 </body>
